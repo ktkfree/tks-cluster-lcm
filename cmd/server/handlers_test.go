@@ -13,17 +13,17 @@ import (
 	"github.com/stretchr/testify/require"
 
 	mockargo "github.com/openinfradev/tks-common/pkg/argowf/mock"
+	"github.com/openinfradev/tks-common/pkg/helper"
+	"github.com/openinfradev/tks-common/pkg/log"
 	pb "github.com/openinfradev/tks-proto/tks_pb"
 	mocktks "github.com/openinfradev/tks-proto/tks_pb/mock"
-
-	"github.com/openinfradev/tks-common/pkg/log"
 )
 
 var (
 	createClusterRequest    *pb.CreateClusterRequest
 	installAppGroupsRequest *pb.InstallAppGroupsRequest
 
-	createdClusterId  = uuid.New().String()
+	createdClusterId  = helper.GenerateClusterId()
 	createdAppGroupId = uuid.New().String()
 )
 
@@ -112,7 +112,7 @@ func TestCreateCluster(t *testing.T) {
 							Code:  pb.Code_OK_UNSPECIFIED,
 							Error: nil,
 							Contract: &pb.Contract{
-								ContractId: uuid.New().String(),
+								ContractId: helper.GenerateContractId(),
 								CspId:      uuid.New().String(),
 							},
 						}, nil)
@@ -186,7 +186,7 @@ func TestCreateCluster(t *testing.T) {
 		{
 			name: "INVALID_ARGUMENT_CSPID",
 			in: &pb.CreateClusterRequest{
-				ContractId: uuid.New().String(),
+				ContractId: helper.GenerateContractId(),
 				CspId:      "THIS_IS_NOT_UUID",
 			},
 			buildStubs: func(mockArgoClient *mockargo.MockClient,
@@ -202,7 +202,7 @@ func TestCreateCluster(t *testing.T) {
 		{
 			name: "INVALID_ARGUMENT_NO_NAME",
 			in: &pb.CreateClusterRequest{
-				ContractId: uuid.New().String(),
+				ContractId: helper.GenerateContractId(),
 				CspId:      uuid.New().String(),
 				Name:       "",
 			},
@@ -258,7 +258,7 @@ func TestCreateCluster(t *testing.T) {
 						&pb.GetCSPInfoResponse{
 							Code:       pb.Code_OK_UNSPECIFIED,
 							Error:      nil,
-							ContractId: uuid.New().String(),
+							ContractId: helper.GenerateContractId(),
 						}, nil)
 			},
 			checkResponse: func(req *pb.CreateClusterRequest, res *pb.IDResponse, err error) {
@@ -434,7 +434,7 @@ func TestDeleteCluster(t *testing.T) {
 		{
 			name: "NOT_EXIST_CLUSTER",
 			in: &pb.IDRequest{
-				Id: uuid.New().String(),
+				Id: helper.GenerateClusterId(),
 			},
 			buildStubs: func(mockArgoClient *mockargo.MockClient, mockClusterInfoClient *mocktks.MockClusterInfoServiceClient, mockAppInfoClient *mocktks.MockAppInfoServiceClient) {
 				mockClusterInfoClient.EXPECT().GetCluster(gomock.Any(), gomock.Any()).Times(1).
@@ -452,7 +452,7 @@ func TestDeleteCluster(t *testing.T) {
 		{
 			name: "THE_CLUSTER_ALREADY_DELETED",
 			in: &pb.IDRequest{
-				Id: uuid.New().String(),
+				Id: helper.GenerateClusterId(),
 			},
 			buildStubs: func(mockArgoClient *mockargo.MockClient, mockClusterInfoClient *mocktks.MockClusterInfoServiceClient, mockAppInfoClient *mocktks.MockAppInfoServiceClient) {
 				mockClusterInfoClient.EXPECT().GetCluster(gomock.Any(), gomock.Any()).Times(1).
@@ -473,7 +473,7 @@ func TestDeleteCluster(t *testing.T) {
 		{
 			name: "FAILED_TO_CALL_WORKFLOW",
 			in: &pb.IDRequest{
-				Id: uuid.New().String(),
+				Id: helper.GenerateClusterId(),
 			},
 			buildStubs: func(mockArgoClient *mockargo.MockClient, mockClusterInfoClient *mocktks.MockClusterInfoServiceClient, mockAppInfoClient *mocktks.MockAppInfoServiceClient) {
 				mockClusterInfoClient.EXPECT().GetCluster(gomock.Any(), gomock.Any()).Times(1).
@@ -503,7 +503,7 @@ func TestDeleteCluster(t *testing.T) {
 		{
 			name: "CLUSTER_STATUS_IS_NOT_RUNNING",
 			in: &pb.IDRequest{
-				Id: uuid.New().String(),
+				Id: helper.GenerateClusterId(),
 			},
 			buildStubs: func(mockArgoClient *mockargo.MockClient, mockClusterInfoClient *mocktks.MockClusterInfoServiceClient, mockAppInfoClient *mocktks.MockAppInfoServiceClient) {
 				mockClusterInfoClient.EXPECT().GetCluster(gomock.Any(), gomock.Any()).Times(1).
@@ -524,7 +524,7 @@ func TestDeleteCluster(t *testing.T) {
 		{
 			name: "APPGROUP_STATUS_IS_NOT_DELETED",
 			in: &pb.IDRequest{
-				Id: uuid.New().String(),
+				Id: helper.GenerateClusterId(),
 			},
 			buildStubs: func(mockArgoClient *mockargo.MockClient, mockClusterInfoClient *mocktks.MockClusterInfoServiceClient, mockAppInfoClient *mocktks.MockAppInfoServiceClient) {
 				mockClusterInfoClient.EXPECT().GetCluster(gomock.Any(), gomock.Any()).Times(1).
@@ -713,7 +713,7 @@ func TestInstallAppGroups(t *testing.T) {
 			in: &pb.InstallAppGroupsRequest{
 				AppGroups: []*pb.AppGroup{
 					{
-						ClusterId:    uuid.New().String(),
+						ClusterId:    helper.GenerateClusterId(),
 						AppGroupName: "",
 					},
 				},
@@ -779,7 +779,7 @@ func TestInstallAppGroups(t *testing.T) {
 						AppGroupId:    uuid.New().String(),
 						AppGroupName:  randomString("APPGROUP"),
 						Type:          pb.AppGroupType_SERVICE_MESH,
-						ClusterId:     uuid.New().String(),
+						ClusterId:     helper.GenerateClusterId(),
 						Status:        pb.AppGroupStatus_APP_GROUP_UNSPECIFIED,
 						ExternalLabel: randomString("EXTERNAL_LABEL"),
 					},
@@ -1022,7 +1022,7 @@ func randomString(prefix string) string {
 
 func randomCreateClusterRequest() *pb.CreateClusterRequest {
 	return &pb.CreateClusterRequest{
-		ContractId: uuid.New().String(),
+		ContractId: helper.GenerateContractId(),
 		CspId:      uuid.New().String(),
 		Name:       randomString("NAME"),
 		Conf: &pb.ClusterRawConf{
@@ -1042,7 +1042,7 @@ func randomInstallAppGroupsRequest() *pb.InstallAppGroupsRequest {
 				AppGroupId:    uuid.New().String(),
 				AppGroupName:  randomString("APPGROUP"),
 				Type:          pb.AppGroupType_LMA,
-				ClusterId:     uuid.New().String(),
+				ClusterId:     helper.GenerateClusterId(),
 				Status:        pb.AppGroupStatus_APP_GROUP_RUNNING,
 				ExternalLabel: randomString("EXTERNAL_LABEL"),
 			},
