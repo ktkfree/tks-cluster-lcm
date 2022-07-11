@@ -33,23 +33,18 @@ jobs:
         tags: |
           sktcloud/${{env.SERVICE}}:${{env.TAG}}
 
-    - name: Setup Helm
-      uses: hiberbee/github-action-helm@1.5.0
+    - name: Setup Kustomize
+      uses: imranismail/setup-kustomize@v1
+      with:
+        kustomize-version: "3.6.1"
     - run: |
         git config --global user.email "ktkfree@github.com"
         git config --global user.name "ktkfree"
 
-        git clone "https://${{secrets.BOT_GITHUB_TOKEN}}@github.com/openinfradev/tks-manifests.git"
-        mkdir -p tks-manifests/${TARGET}/${SERVICE}/manifests
-        cd tks-manifests/${TARGET}/${SERVICE}/manifests
+        git clone "https://${{secrets.BOT_GITHUB_TOKEN}}@github.com/ktkfree/tks-manifests.git"
+        cd tks-manifests/${SERVICE}/overlay/${TARGET}
 
-        ls -al
-
-        helm repo add openinfradev https://openinfradev.github.io/helm-repo
-        helm template --set image.tag=${TAG} openinfradev/${SERVICE} > manifest.yaml
-
-        ls -al
-
-        git add manifest.yaml
+        kustomize edit set image sktcloud/${SERVICE}:${TAG}
+        git add kustomization.yaml
         git commit --allow-empty -m "Set image tag to ${SERVICE} ${TAG}"
         git push origin main --force
