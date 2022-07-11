@@ -40,13 +40,16 @@ jobs:
         git config --global user.name "ktkfree"
 
         git clone "https://${{secrets.BOT_GITHUB_TOKEN}}@github.com/openinfradev/tks-manifests.git"
-        rm -rf tks-manifests/${TARGET}/${SERVICE}/manifests
         mkdir -p tks-manifests/${TARGET}/${SERVICE}/manifests
         cd tks-manifests/${TARGET}/${SERVICE}/manifests
+
+        ls -al
 
         helm repo add openinfradev https://openinfradev.github.io/helm-repo
         helm template --set image.tag=${TAG} openinfradev/${SERVICE} > manifest.yaml
 
+        ls -al
+
         git add manifest.yaml
-        git commit --allow-empty -m "Set image tag to `${TAG}`"
+        git commit --allow-empty -m "Set image tag to ${SERVICE} ${TAG}"
         git push origin main --force
